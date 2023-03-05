@@ -60,21 +60,18 @@ const PokemonPage: NextPage<Props> = ({ pokemon }) => {
                     </Card.Body>
                 </Card>
               </Grid>
-
               <Grid xs={ 12 } sm={ 8 }>
                 <Card>
                   <Card.Header css={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text h1 transform='capitalize'>{ pokemon.name }</Text>
-
+                    <Text h3 transform='capitalize'>{ pokemon.name }</Text>
                     <Button
                       color="gradient"
                       ghost={ !isInFavorites }
                       onClick={ onToggleFavorite }
                     >
-                      { isInFavorites ? 'En Favoritos' : 'Guardar en favoritos' }
+                      { isInFavorites ? 'Eliminar' : 'Favoritos' }
                     </Button>
                   </Card.Header>
-
                   <Card.Body>
                     <Text size={30}>Sprites:</Text>
 
@@ -103,20 +100,11 @@ const PokemonPage: NextPage<Props> = ({ pokemon }) => {
                           width={ 100 }
                           height={ 100 }
                         />
-
                     </Container>
-
-
                   </Card.Body>  
-
-
                 </Card>
               </Grid>
-
            </Grid.Container>
-
-
-
         </Layout>
     )
 };
@@ -132,7 +120,8 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
     paths: pokemons151.map( id => ({
       params: { id }
     })),
-    fallback: false
+    // fallback: false
+    fallback: 'blocking'
   }
 }
 
@@ -142,10 +131,23 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   
   const { id } = params as { id: string };
 
+  const pokemon = await getPokemonInfo( id );
+
+  if ( !pokemon ) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false
+      }
+    }
+  }
+
+
   return {
     props: {
-      pokemon: await getPokemonInfo( id )
-    }
+      pokemon
+    },
+    revalidate: 86400, // 60 * 60 * 24,
   }
 }
 
